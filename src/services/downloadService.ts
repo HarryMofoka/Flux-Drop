@@ -1,5 +1,5 @@
 import { BrowserWindow, app } from 'electron';
-import { spawn } from 'child_process';
+import { spawn, ChildProcess } from 'child_process';
 import * as path from 'path';
 
 export interface DownloadOptions {
@@ -8,12 +8,13 @@ export interface DownloadOptions {
 }
 
 export interface StructuredError {
-    type: 'NETWORK_ERROR' | 'INVALID_URL' | 'UNAVAILABLE_VIDEO' | 'SYSTEM_ERROR' | 'UNKNOWN';
+    type: 'NETWORK_ERROR' | 'INVALID_URL' | 'UNAVAILABLE_VIDEO' | 'SYSTEM_ERROR' | 'USER_CANCELLED' | 'UNKNOWN';
     message: string;
 }
 
 export class DownloadService {
     private isDownloading: boolean = false;
+    private currentProcess: ChildProcess | null = null;
 
     async startDownload(win: BrowserWindow, url: string, options: DownloadOptions) {
         if (this.isDownloading) {
@@ -58,40 +59,45 @@ export class DownloadService {
             args.push('--merge-output-format', 'mp4');
         }
 
-        const child = spawn('yt-dlp', args);
+        this.currentProcess = spawn('yt-dlp', args);
 
-        child.stdout.on('data', (data) => {
+        this.currentProcess.stdout?.on('data', (data) => {
             const line = data.toString().trim();
             this.parseProgress(win, line);
         });
 
-        child.stderr.on('data', (data) => {
+        this.currentProcess.stderr?.on('data', (data) => {
             const errorMsg = data.toString();
             console.error(`yt-dlp stderr: ${errorMsg}`);
             // We process errors in 'close' but log stderr for debugging
         });
 
-        child.on('close', (code) => {
+        this.currentProcess.on('close', (code) => {
+            const wereDownloading = this.isDownloading;
             this.isDownloading = false;
+            this.currentProcess = null;
+
             if (code === 0) {
                 win.webContents.send('download:status', {
                     status: 'Completed',
                     message: 'Download finished successfully.'
                 });
-            } else {
+            } else if (wereDownloading) {
+                // Only send error if it wasn't a clean cancellation handled elsewhere
                 this.sendError(win, {
                     type: 'UNKNOWN',
-                    message: `Download failed with exit code ${code}. Check if URL is valid or yt-dlp is installed.`
+                    message: `Download failed or was interrupted. Code: ${code}`
                 });
             }
         });
 
-        child.on('error', (err: any) => {
+        this.currentProcess.on('error', (err: any) => {
             this.isDownloading = false;
+            this.currentProcess = null;
             if (err.code === 'ENOENT') {
                 this.sendError(win, {
                     type: 'SYSTEM_ERROR',
-                    message: 'yt-dlp not found. Please ensure it is installed and in your system PATH.'
+                    message: 'yt-dlp not found. Please ensure it is installed.'
                 });
             } else {
                 this.sendError(win, {
@@ -100,6 +106,18 @@ export class DownloadService {
                 });
             }
         });
+    }
+
+    cancelDownload(win: BrowserWindow) {
+        if (this.currentProcess && this.isDownloading) {
+            this.isDownloading = false;
+            this.currentProcess.kill('SIGTERM');
+            this.currentProcess = null;
+            win.webContents.send('download:status', {
+                status: 'Failed',
+                message: 'Download cancelled by user.'
+            });
+        }
     }
 
     private parseProgress(win: BrowserWindow, line: string) {

@@ -8,6 +8,7 @@ contextBridge.exposeInMainWorld('api', {
     },
     download: {
         start: (url: string, options: any) => ipcRenderer.send('download:start', { url, options }),
+        cancel: () => ipcRenderer.send('download:cancel'),
         onProgress: (callback: (data: any) => void) => ipcRenderer.on('download:progress', (_event, value) => callback(value)),
         onStatus: (callback: (data: any) => void) => ipcRenderer.on('download:status', (_event, value) => callback(value)),
     }

@@ -92,8 +92,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 /* Hero Section */
@@ -185,6 +192,26 @@ h1 {
     transform: translateY(0);
 }
 
+.secondary-btn {
+    background: var(--bg-soft);
+    color: var(--text-dim);
+    border: 1px solid var(--border);
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+    width: 100%;
+}
+
+.secondary-btn:hover {
+    background: #2a2a3f;
+    color: var(--text-main);
+    border-color: var(--text-dim);
+}
+
 /* Options Grid */
 .options-grid {
     display: grid;
@@ -234,7 +261,7 @@ h1 {
 .selector-btn.active {
     background: var(--bg-soft);
     color: var(--primary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 }
 
 select {
@@ -326,9 +353,23 @@ select:focus {
 }
 
 @keyframes slideUp {
-    from { opacity: 0; transform: translate(-50%, 20px); }
-    to { opacity: 1; transform: translate(-50%, 0); }
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
 }
 
-.notification.success { background: var(--success); color: white; }
-.notification.error { background: var(--error); color: white; }
+.notification.success {
+    background: var(--success);
+    color: white;
+}
+
+.notification.error {
+    background: var(--error);
+    color: white;
+}

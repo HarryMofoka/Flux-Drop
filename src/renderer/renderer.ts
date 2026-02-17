@@ -1,5 +1,6 @@
 const urlInput = document.getElementById('url-input') as HTMLInputElement;
 const downloadBtn = document.getElementById('download-btn') as HTMLButtonElement;
+const cancelBtn = document.getElementById('cancel-btn') as HTMLButtonElement;
 const formatBtns = document.querySelectorAll('.selector-btn');
 const progressArea = document.getElementById('progress-area');
 const progressBar = document.getElementById('progress-bar');
@@ -8,6 +9,7 @@ const speedText = document.getElementById('speed-text');
 const etaText = document.getElementById('eta-text');
 const statusText = document.getElementById('status-text');
 const notification = document.getElementById('notification');
+const qualityDropdown = document.getElementById('quality-dropdown') as HTMLSelectElement;
 
 let selectedFormat = 'mp4';
 
@@ -33,15 +35,35 @@ downloadBtn.addEventListener('click', () => {
         return;
     }
 
-    progressArea?.classList.remove('hidden');
-    downloadBtn.disabled = true;
-    downloadBtn.style.opacity = '0.5';
+    setUIState(true);
 
     (window as any).api.download.start(url, {
         format: selectedFormat,
-        quality: (document.getElementById('quality-dropdown') as HTMLSelectElement).value
+        quality: qualityDropdown.value
     });
 });
+
+// Cancel Action
+cancelBtn?.addEventListener('click', () => {
+    (window as any).api.download.cancel();
+});
+
+function setUIState(isDownloading: boolean) {
+    if (isDownloading) {
+        progressArea?.classList.remove('hidden');
+        downloadBtn.disabled = true;
+        urlInput.disabled = true;
+        qualityDropdown.disabled = true;
+        formatBtns.forEach(btn => (btn as HTMLButtonElement).disabled = true);
+        downloadBtn.style.opacity = '0.5';
+    } else {
+        downloadBtn.disabled = false;
+        urlInput.disabled = false;
+        qualityDropdown.disabled = false;
+        formatBtns.forEach(btn => (btn as HTMLButtonElement).disabled = false);
+        downloadBtn.style.opacity = '1';
+    }
+}
 
 // Download Progress Updates
 (window as any).api.download.onProgress((data: any) => {
@@ -54,15 +76,16 @@ downloadBtn.addEventListener('click', () => {
 (window as any).api.download.onStatus((data: any) => {
     if (statusText) statusText.innerText = data.status;
 
-    if (data.status === 'Completed' || data.status === 'Failed') {
-        downloadBtn.disabled = false;
-        downloadBtn.style.opacity = '1';
+    if (data.status === 'Completed' || data.status === 'Failed' || data.status === 'Cancelled') {
+        setUIState(false);
         showNotification(data.message || `Download ${data.status.toLowerCase()}`, data.status === 'Completed' ? 'success' : 'error');
 
         if (data.status === 'Completed') {
             setTimeout(() => {
-                progressArea?.classList.add('hidden');
-            }, 3000);
+                if (!urlInput.disabled) { // Only hide if we haven't started another one
+                    progressArea?.classList.add('hidden');
+                }
+            }, 5000);
         }
     }
 });

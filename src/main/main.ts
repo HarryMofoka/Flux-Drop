@@ -66,3 +66,10 @@ ipcMain.on('download:start', (event: IpcMainEvent, { url, options }: { url: stri
     downloadService.startDownload(win, url, options);
   }
 });
+
+ipcMain.on('download:cancel', (event: IpcMainEvent) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    downloadService.cancelDownload(win);
+  }
+});
