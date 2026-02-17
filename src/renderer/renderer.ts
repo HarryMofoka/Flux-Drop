@@ -11,7 +11,16 @@ const statusText = document.getElementById('status-text');
 const notification = document.getElementById('notification');
 const qualityDropdown = document.getElementById('quality-dropdown') as HTMLSelectElement;
 
+// Preview Elements
+const videoPreview = document.getElementById('video-preview');
+const videoThumbnail = document.getElementById('video-thumbnail') as HTMLImageElement;
+const videoTitle = document.getElementById('video-title');
+const videoUploader = document.getElementById('video-uploader');
+const formatList = document.getElementById('format-list');
+
 let selectedFormat = 'mp4';
+let selectedFormatId: string | null = null;
+let fetchTimeout: any = null;
 
 // Window Controls
 document.getElementById('min-btn')?.addEventListener('click', () => (window as any).api.windowControl.minimize());
@@ -24,8 +33,105 @@ formatBtns.forEach(btn => {
         formatBtns.forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         selectedFormat = (btn as HTMLElement).dataset.value || 'mp4';
+
+        // Reset selected format ID when switching between mp4/mp3
+        selectedFormatId = null;
+        updateFormatChips();
     });
 });
+
+// URL Input Monitoring (Debounced)
+urlInput.addEventListener('input', () => {
+    const url = urlInput.value.trim();
+    if (fetchTimeout) clearTimeout(fetchTimeout);
+
+    if (!url || !url.includes('youtube.com/watch') && !url.includes('youtu.be/')) {
+        videoPreview?.classList.add('hidden');
+        return;
+    }
+
+    fetchTimeout = setTimeout(fetchVideoMetadata, 800);
+});
+
+async function fetchVideoMetadata() {
+    const url = urlInput.value.trim();
+    if (!url) return;
+
+    try {
+        downloadBtn.disabled = true;
+        downloadBtn.style.opacity = '0.5';
+
+        const info = await (window as any).api.video.getInfo(url);
+
+        if (info) {
+            displayVideoInfo(info);
+        }
+    } catch (error) {
+        console.error('Failed to fetch metadata:', error);
+        showNotification('Invalid video URL or network issue', 'error');
+    } finally {
+        downloadBtn.disabled = false;
+        downloadBtn.style.opacity = '1';
+    }
+}
+
+function displayVideoInfo(info: any) {
+    if (!videoPreview || !videoThumbnail || !videoTitle || !videoUploader || !formatList) return;
+
+    videoThumbnail.src = info.thumbnail;
+    videoTitle.innerText = info.title;
+    videoUploader.innerText = info.uploader;
+
+    // Store formats and render them
+    renderFormatChips(info.formats);
+
+    videoPreview.classList.remove('hidden');
+}
+
+function getQualityLabel(resolution: string): string {
+    if (resolution.includes('2160') || resolution.toLowerCase().includes('4k')) return '4K Ultra HD';
+    if (resolution.includes('1440') || resolution.toLowerCase().includes('2k')) return '1440p 2K QHD';
+    if (resolution.includes('1080')) return '1080p Full HD';
+    if (resolution.includes('720')) return '720p HD';
+    if (resolution.includes('480')) return '480p SD';
+    if (resolution.includes('360')) return '360p';
+    if (resolution === 'audio') return 'Audio Only';
+    return resolution;
+}
+
+function renderFormatChips(formats: any[]) {
+    if (!formatList) return;
+    formatList.innerHTML = '';
+
+    // Group and filter formats to keep it clean
+    const filteredFormats = formats
+        .filter(f => selectedFormat === 'mp3' ? f.resolution === 'audio' : f.resolution !== 'audio')
+        .slice(0, 15); // Show a few more options
+
+    filteredFormats.forEach(f => {
+        const chip = document.createElement('div');
+        chip.className = 'format-chip';
+        const size = f.filesize ? `(${(f.filesize / 1024 / 1024).toFixed(1)}MB)` : '';
+        const qualityLabel = getQualityLabel(f.resolution);
+        chip.innerText = `${qualityLabel} - ${f.ext} ${size}`;
+        chip.dataset.id = f.id;
+
+        chip.addEventListener('click', () => {
+            document.querySelectorAll('.format-chip').forEach(c => c.classList.remove('active'));
+            chip.classList.add('active');
+            selectedFormatId = f.id;
+        });
+
+        formatList.appendChild(chip);
+    });
+}
+
+function updateFormatChips() {
+    // If we have video info, re-render chips based on new format (mp4/mp3)
+    // This is a bit tricky without storing the full info, but for now let's just 
+    // re-trigger fetch if needed or handle simple cases.
+    // Simplifying: chips will refresh if user clicks "Fetch" or we store metadata.
+}
 
 // Download Action
 downloadBtn.addEventListener('click', () => {
@@ -39,7 +145,8 @@ downloadBtn.addEventListener('click', () => {
 
     (window as any).api.download.start(url, {
         format: selectedFormat,
-        quality: qualityDropdown.value
+        quality: qualityDropdown.value,
+        formatId: selectedFormatId
     });
 });
 

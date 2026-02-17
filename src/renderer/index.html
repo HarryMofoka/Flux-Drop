@@ -72,13 +72,30 @@
                     </div>
                 </div>
                 <div class="option-item">
-                    <label>Quality</label>
+                    <label>Quality Preset</label>
                     <select id="quality-dropdown">
                         <option value="auto">Auto Quality</option>
+                        <option value="2160">4K Ultra HD</option>
+                        <option value="1440">1440p 2K QHD</option>
                         <option value="1080">1080p Full HD</option>
                         <option value="720">720p HD</option>
                         <option value="480">480p SD</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Video Preview Section -->
+            <div id="video-preview" class="preview-card hidden">
+                <img id="video-thumbnail" src="" alt="Thumbnail">
+                <div class="preview-info">
+                    <h3 id="video-title">Video Title</h3>
+                    <p id="video-uploader">Uploader</p>
+                    <div id="format-list-container">
+                        <label>Available Formats</label>
+                        <div id="format-list" class="format-chips">
+                            <!-- Formats will be injected here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

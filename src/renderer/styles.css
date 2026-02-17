@@ -23,6 +23,8 @@ body {
     color: var(--text-main);
     overflow: hidden;
     height: 100vh;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Title Bar */
@@ -34,6 +36,7 @@ body {
     justify-content: space-between;
     border-bottom: 1px solid var(--border);
     user-select: none;
+    flex-shrink: 0;
 }
 
 .drag-region {
@@ -89,6 +92,9 @@ body {
     flex-direction: column;
     gap: 40px;
     animation: fadeIn 0.6s ease-out;
+    flex: 1;
+    overflow-y: auto;
+    width: 100%;
 }
 
 @keyframes fadeIn {
@@ -281,6 +287,91 @@ select {
 
 select:focus {
     border-color: var(--primary);
+}
+
+/* Preview Card */
+.preview-card {
+    background: var(--bg-dark);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 20px;
+    display: flex;
+    gap: 20px;
+    animation: slideUp 0.4s ease-out;
+    margin-top: 10px;
+}
+
+#video-thumbnail {
+    width: 200px;
+    height: 112px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: var(--bg-soft);
+    flex-shrink: 0;
+}
+
+.preview-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+#video-title {
+    font-size: 16px;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#video-uploader {
+    font-size: 13px;
+    color: var(--text-dim);
+}
+
+#format-list-container {
+    margin-top: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+#format-list-container label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-dim);
+    text-transform: uppercase;
+}
+
+.format-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.format-chip {
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text-dim);
+}
+
+.format-chip:hover {
+    border-color: var(--primary);
+    color: var(--text-main);
+}
+
+.format-chip.active {
+    background: var(--primary);
+    color: var(--bg-deep);
+    border-color: var(--primary);
+    font-weight: 600;
 }
 
 /* Progress Section */

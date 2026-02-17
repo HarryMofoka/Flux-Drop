@@ -5,6 +5,21 @@ import * as path from 'path';
 export interface DownloadOptions {
     format: 'mp4' | 'mp3';
     quality: string;
+    formatId?: string; // Specific yt-dlp format ID
+}
+
+export interface VideoInfo {
+    title: string;
+    thumbnail: string;
+    duration: number;
+    uploader: string;
+    formats: Array<{
+        id: string;
+        ext: string;
+        resolution: string;
+        filesize?: number;
+        note: string;
+    }>;
 }
 
 export interface StructuredError {
@@ -15,6 +30,47 @@ export interface StructuredError {
 export class DownloadService {
     private isDownloading: boolean = false;
     private currentProcess: ChildProcess | null = null;
+
+    async getVideoInfo(url: string): Promise<VideoInfo> {
+        return new Promise((resolve, reject) => {
+            const args = ['-j', '--skip-download', url];
+            const child = spawn('yt-dlp', args);
+            let stdout = '';
+            let stderr = '';
+
+            child.stdout.on('data', (data) => stdout += data.toString());
+            child.stderr.on('data', (data) => stderr += data.toString());
+
+            child.on('close', (code) => {
+                if (code !== 0) {
+                    reject(new Error(stderr || `yt-dlp exited with code ${code}`));
+                    return;
+                }
+                try {
+                    const data = JSON.parse(stdout);
+                    const info: VideoInfo = {
+                        title: data.title,
+                        thumbnail: data.thumbnail,
+                        duration: data.duration,
+                        uploader: data.uploader,
+                        formats: data.formats
+                            .filter((f: any) => f.vcodec !== 'none' || f.acodec !== 'none')
+                            .map((f: any) => ({
+                                id: f.format_id,
+                                ext: f.ext,
+                                resolution: f.resolution || (f.height ? `${f.height}p` : 'audio'),
+                                filesize: f.filesize || f.filesize_approx,
+                                note: f.format_note || ''
+                            }))
+                            .reverse() // Often higher quality at the end
+                    };
+                    resolve(info);
+                } catch (e) {
+                    reject(new Error('Failed to parse video information.'));
+                }
+            });
+        });
+    }
 
     async startDownload(win: BrowserWindow, url: string, options: DownloadOptions) {
         if (this.isDownloading) {
@@ -45,11 +101,18 @@ export class DownloadService {
             url
         ];
 
-        if (options.format === 'mp3') {
+        if (options.formatId) {
+            // Specific format selected
+            args.push('-f', options.formatId + '+bestaudio/best');
+        } else if (options.format === 'mp3') {
             args.push('--extract-audio', '--audio-format', 'mp3');
         } else {
             // Video formats
-            if (options.quality === '1080') {
+            if (options.quality === '2160') {
+                args.push('-f', 'bestvideo[height<=2160]+bestaudio/best[height<=2160]/best');
+            } else if (options.quality === '1440') {
+                args.push('-f', 'bestvideo[height<=1440]+bestaudio/best[height<=1440]/best');
+            } else if (options.quality === '1080') {
                 args.push('-f', 'bestvideo[height<=1080]+bestaudio/best[height<=1080]/best');
             } else if (options.quality === '720') {
                 args.push('-f', 'bestvideo[height<=720]+bestaudio/best[height<=720]/best');
@@ -97,7 +160,7 @@ export class DownloadService {
             if (err.code === 'ENOENT') {
                 this.sendError(win, {
                     type: 'SYSTEM_ERROR',
-                    message: 'yt-dlp not found. Please ensure it is installed.'
+                    message: 'yt-dlp not found. Please install it using: winget install yt-dlp'
                 });
             } else {
                 this.sendError(win, {
