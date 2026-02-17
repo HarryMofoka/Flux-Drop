@@ -4,8 +4,8 @@
   "description": "",
   "main": "dist/main.js",
   "scripts": {
-    "start": "tsc && electron .",
-    "build": "tsc && electron-builder"
+    "start": "tsc && copy src\\index.html dist\\ && copy src\\styles.css dist\\ && electron .",
+    "build": "tsc && copy src\\index.html dist\\ && copy src\\styles.css dist\\ && electron-builder"
   },
   "build": {
     "appId": "com.fluxdrop.app",
