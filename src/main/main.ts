@@ -12,13 +12,13 @@ function createWindow() {
     frame: false, // Custom frameless window for desktop utility feel
     titleBarStyle: 'hidden',
     webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
+      preload: path.join(__dirname, '..', 'preload', 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false,
     },
   });
 
-  win.loadFile(path.join(__dirname, 'index.html'));
+  win.loadFile(path.join(__dirname, '..', 'renderer', 'index.html'));
 
   win.once('ready-to-show', () => {
     win.show();
@@ -42,11 +42,11 @@ app.on('window-all-closed', () => {
 });
 
 // IPC handlers for window control (since frame: false)
-ipcMain.on('window-minimize', (event) => {
+ipcMain.on('window:minimize', (event) => {
   BrowserWindow.fromWebContents(event.sender)?.minimize();
 });
 
-ipcMain.on('window-maximize', (event) => {
+ipcMain.on('window:maximize', (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win?.isMaximized()) {
     win.unmaximize();
@@ -55,6 +55,6 @@ ipcMain.on('window-maximize', (event) => {
   }
 });
 
-ipcMain.on('window-close', (event) => {
+ipcMain.on('window:close', (event) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
 });

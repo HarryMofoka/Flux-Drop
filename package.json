@@ -2,10 +2,10 @@
   "name": "fluxdrop",
   "version": "1.0.0",
   "description": "",
-  "main": "dist/main.js",
+  "main": "dist/main/main.js",
   "scripts": {
-    "start": "tsc && copy src\\index.html dist\\ && copy src\\styles.css dist\\ && electron .",
-    "build": "tsc && copy src\\index.html dist\\ && copy src\\styles.css dist\\ && electron-builder"
+    "start": "tsc && copy src\\renderer\\index.html dist\\renderer\\ && copy src\\renderer\\styles.css dist\\renderer\\ && electron .",
+    "build": "tsc && copy src\\renderer\\index.html dist\\renderer\\ && copy src\\renderer\\styles.css dist\\renderer\\ && electron-builder"
   },
   "build": {
     "appId": "com.fluxdrop.app",
