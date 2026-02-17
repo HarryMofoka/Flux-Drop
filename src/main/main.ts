@@ -1,5 +1,6 @@
-import { app, BrowserWindow, ipcMain } from 'electron';
+import { app, BrowserWindow, ipcMain, IpcMainEvent } from 'electron';
 import * as path from 'path';
+import { downloadService, DownloadOptions } from '../services/downloadService';
 
 function createWindow() {
   const win = new BrowserWindow({
@@ -42,11 +43,11 @@ app.on('window-all-closed', () => {
 });
 
 // IPC handlers for window control (since frame: false)
-ipcMain.on('window:minimize', (event) => {
+ipcMain.on('window:minimize', (event: IpcMainEvent) => {
   BrowserWindow.fromWebContents(event.sender)?.minimize();
 });
 
-ipcMain.on('window:maximize', (event) => {
+ipcMain.on('window:maximize', (event: IpcMainEvent) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win?.isMaximized()) {
     win.unmaximize();
@@ -55,6 +56,13 @@ ipcMain.on('window:maximize', (event) => {
   }
 });
 
-ipcMain.on('window:close', (event) => {
+ipcMain.on('window:close', (event: IpcMainEvent) => {
   BrowserWindow.fromWebContents(event.sender)?.close();
+});
+
+ipcMain.on('download:start', (event: IpcMainEvent, { url, options }: { url: string; options: DownloadOptions }) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    downloadService.startDownload(win, url, options);
+  }
 });
