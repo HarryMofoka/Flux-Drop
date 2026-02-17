@@ -1,0 +1,34 @@
+{
+  "name": "fluxdrop",
+  "version": "1.0.0",
+  "description": "",
+  "main": "dist/main.js",
+  "scripts": {
+    "start": "tsc && electron .",
+    "build": "tsc && electron-builder"
+  },
+  "build": {
+    "appId": "com.fluxdrop.app",
+    "win": {
+      "target": "portable"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/HarryMofoka/Flux-Drop.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/HarryMofoka/Flux-Drop/issues"
+  },
+  "homepage": "https://github.com/HarryMofoka/Flux-Drop#readme",
+  "devDependencies": {
+    "electron": "^40.4.1",
+    "electron-builder": "^26.7.0",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  }
+}

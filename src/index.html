@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FluxDrop</title>
+    <link rel="stylesheet" href="styles.css">
+    <script defer src="renderer.js"></script>
+</head>
+<body class="dark-theme">
+    <!-- Custom Title Bar -->
+    <div class="title-bar">
+        <div class="drag-region">
+            <span class="app-title">FluxDrop</span>
+        </div>
+        <div class="window-controls">
+            <button id="min-btn" class="control-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12"><rect fill="currentColor" width="10" height="1" x="1" y="6"/></svg>
+            </button>
+            <button id="max-btn" class="control-btn">
+                <svg width="12" height="12" viewBox="0 0 12 12"><path fill="currentColor" d="M2.5,2.5v7h7v-7H2.5z M8.5,8.5h-5v-5h5V8.5z"/></svg>
+            </button>
+            <button id="close-btn" class="control-btn close">
+                <svg width="12" height="12" viewBox="0 0 12 12"><path fill="currentColor" d="M10.7,1.3l-0.7-0.7L5,4.6L0.3,0.3l-0.7,0.7L4.3,5l-4.7,4.7l0.7,0.7L5,5.4l4.7,4.7l0.7-0.7L5.7,5L10.7,1.3z"/></svg>
+            </button>
+        </div>
+    </div>
+
+    <main class="container">
+        <header class="hero">
+            <div class="logo-container">
+                <div class="logo">
+                    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-zap"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                </div>
+                <h1>FluxDrop</h1>
+                <p class="tagline">Fast, Clean, Intentional Downloads.</p>
+            </div>
+        </header>
+
+        <section class="main-action">
+            <div class="input-group">
+                <input type="text" id="url-input" placeholder="Paste YouTube URL here..." spellcheck="false">
+                <button id="download-btn" class="primary-btn">
+                    <span>Download</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-arrow-down-to-line"><path d="M12 17V3"/><path d="m6 11 6 6 6-6"/><path d="M19 21H5"/></svg>
+                </button>
+            </div>
+
+            <div class="options-grid">
+                <div class="option-item">
+                    <label>Format</label>
+                    <div class="compact-selector" id="format-selector">
+                        <button data-value="mp4" class="selector-btn active">Video MP4</button>
+                        <button data-value="mp3" class="selector-btn">Audio MP3</button>
+                    </div>
+                </div>
+                <div class="option-item">
+                    <label>Quality</label>
+                    <select id="quality-dropdown">
+                        <option value="auto">Auto Quality</option>
+                        <option value="1080">1080p Full HD</option>
+                        <option value="720">720p HD</option>
+                        <option value="480">480p SD</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <section class="progress-section hidden" id="progress-area">
+            <div class="progress-info">
+                 <span id="status-text">Downloading...</span>
+                 <span id="percentage-text">0%</span>
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-bar" id="progress-bar"></div>
+            </div>
+            <div class="progress-meta">
+                <span id="speed-text">0 MB/s</span>
+                <span id="eta-text">ETA: 00:00</span>
+            </div>
+        </section>
+
+        <div id="notification" class="notification hidden"></div>
+    </main>
+</body>
+</html>
